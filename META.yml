@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Dancer-Plugin-EscapeHTML
-version:            0.02
+version:            0.03
 abstract:           Escape HTML entities to avoid XSS vulnerabilities
 author:
     - David Precious <davidp@preshweb.co.uk>
