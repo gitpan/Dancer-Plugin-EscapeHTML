@@ -8,7 +8,7 @@ use Dancer qw(:syntax);
 
 use HTML::Entities;
 
-our $VERSION = '0.04';
+our $VERSION = '0.10';
 
 =head1 NAME
 
@@ -71,7 +71,6 @@ register 'unescape_html' => sub {
     return HTML::Entities::decode_entities(@_);
 };
 
-
 =head1 Automatic HTML encoding
 
 If desired, you can also enable automatic HTML encoding of all params passed to
@@ -101,34 +100,34 @@ The above would exclude token names ending in C<_html> from being escaped.
 
 =cut
 
+my $exclude_pattern;
+
 hook before_template_render => sub {
     my $tokens = shift;
     my $config = plugin_setting;
-    debug "Hook fired";
     return unless $config->{automatic_escaping};
-    debug "OK, calling _encode";
 
-    debug("Before encoding, tokens were:", $tokens);
-    $tokens = _encode($tokens, $config);
-    debug("After encoding, tokens were:", $tokens);
+    # compile $exclude_pattern once per template call
+    $exclude_pattern = exists $config->{exclude_pattern}
+        ? qr/$config->{exclude_pattern}/
+        : undef;
 
+    $tokens = _encode($tokens);
 };
 
 # Encode values, recursing down into hash/arrayrefs.
 # TODO: this will probably choke on circular references
 sub _encode {
-    my ($in,$config) = @_;
-    debug "_encode called, looking at $in which is a "  .ref $in;
+    my $in = shift;
+    return unless defined $in; # avoid interpolation warnings
     if (!ref $in) {
-        debug "Encoding value $in...";
         $in = HTML::Entities::encode_entities($in);
-        debug "Encoded value: $in";
     } elsif (ref $in eq 'ARRAY') {
         $in->[$_] = _encode($in->[$_]) for (0..$#$in);
     } elsif (ref $in eq 'HASH') {
-        while (my($k,$v) = each %$in) { 
-            next if exists $config->{exclude_pattern}
-                && $k =~ /$config->{exclude_pattern}/;
+        while (my($k,$v) = each %$in) {
+            next if defined $exclude_pattern
+                && $k =~ $exclude_pattern;
             $in->{$k} = _encode($v);
         }
     }
