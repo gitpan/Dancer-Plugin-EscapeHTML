@@ -1,5 +1,12 @@
 Revision history for Dancer-Plugin-EscapeHTML
 
+0.11    2011-10-03
+        More changes kindly submitted by Tom Rathborne:
+         - Avoid reference loops properly
+         - Remove outdated documentation
+         - Slight performance boost
+        Thanks again, Tom!
+
 0.10    2011-10-03
         Changes kindly submitted by Tom Rathborne (@trathborne):
          - Avoid unitialised value in interpolation warning
